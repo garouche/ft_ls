@@ -6,7 +6,7 @@
 /*   By: garouche <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/02/17 16:27:17 by garouche          #+#    #+#             */
-/*   Updated: 2017/02/17 22:46:31 by garouche         ###   ########.fr       */
+/*   Updated: 2017/02/18 17:19:00 by garouche         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,16 @@ typedef struct		s_dir
 	struct dirent *dir;
 	struct s_dir *next;
 	char		*dir_name;
+	char		*start;
 }					t_dir;
+
+typedef struct		s_options
+{
+	char	l;
+	char	r;
+	char	R;
+	char	a;
+	char	t;
+}					t_opt;
 
 #endif
