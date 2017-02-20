@@ -6,7 +6,7 @@
 /*   By: garouche <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/02/16 17:01:52 by garouche          #+#    #+#             */
-/*   Updated: 2017/02/18 21:39:11 by garouche         ###   ########.fr       */
+/*   Updated: 2017/02/21 00:39:35 by garouche         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,50 +19,30 @@
 #include <unistd.h>
 #include <time.h>
 #include <sys/xattr.h>
+#include <errno.h>
+#include <string.h>
 
-void	roll(t_dir **dir, char *start, t_dir **buf)
+void	roll(t_dir **dir, char *start, t_dir **buf, char *path)
 {
-	t_dir *ptr;
-	char *str;	
+	char *str;
+
+	if (*buf)
+	{
+		if ((str = ft_strrchr((*buf)->dir_name, '/') + 1) == NULL)
+			str = (*buf)->dir_name + 2;
+	}
 	if (*buf == NULL)
 	{
 		*buf = malloc(sizeof(t_dir));
-		str = (ft_strcmp(start, (*dir)->dir_name) == 0 ? "" : "/");
-		str = ft_strjoin((*dir)->dir_name, str);
-		(*buf)->dir_name = ft_strjoin(str, (*dir)->dir->d_name);
-		free(str);
-		(*buf)->path = opendir((*buf)->dir_name);
+		set_path(dir, buf, start, path);
 		(*buf)->next = NULL;
 	}
+	else if (ft_strcmp(path, str) > 0)
+		push_back_dir(dir, buf, path, start);
 	else
-	{
-		ptr = *buf;
-		while (ptr->next)
-			ptr = ptr->next;
-		ptr->next = malloc(sizeof(t_dir));
-		ptr = ptr->next;
-		ptr->dir_name = ft_strjoin((*dir)->dir_name, (*dir)->dir->d_name);
-		ptr->path = opendir(ptr->dir_name);
-		ptr->next = NULL;
-	}
+		push_front_dir(dir, buf, path, start);
 }
 
-void	cat_list(t_dir **dir, t_dir **buf)
-{
-	t_dir	*ptr;
-	t_dir 	*ptr2;
-
-	if ((*dir)->next == NULL && *buf)
-		(*dir)->next = *buf;
-	else if (*buf)
-	{
-		ptr2 = *buf;
-		while (ptr2->next)
-			ptr2 = ptr2->next;
-		ptr2->next = (*dir)->next;
-		(*dir)->next = *buf;	
-	}
-}
 void	display(t_dir **dir, char *start, t_opt **opt)
 {
 	t_ls	*ls;
@@ -74,63 +54,25 @@ void	display(t_dir **dir, char *start, t_opt **opt)
 	file_path = ft_strjoin((*dir)->dir_name, "/");
 	ls = malloc(sizeof(t_ls));
 	ls->st = malloc(sizeof(struct stat));
-	while (((*dir)->dir = readdir((*dir)->path)))
+	while ((ls->dir = readdir((*dir)->path)))
 	{
-		if (*(*dir)->dir->d_name != '.')
+		if (*ls->dir->d_name != '.')
 		{
-			printf("%s	", (*dir)->dir->d_name);
-			ptr = ft_strjoin(file_path, (*dir)->dir->d_name);
-			stat(ptr, ls->st);
+			printf("%s	", ls->dir->d_name);
+			ptr = ft_strjoin(file_path, ls->dir->d_name);
+			lstat(ptr, ls->st);
 			free(ptr);
-			if (S_ISDIR (ls->st->st_mode) && (*opt)->R == 1)
-				roll(dir, start, &buf);
+			if (S_ISDIR (ls->st->st_mode) == 1 && (*opt)->R == 1)
+				roll(dir, start, &buf, ls->dir->d_name);
 		}
 	}
+	closedir((*dir)->path);
 	cat_list(dir, &buf);
-	while (buf)
-	{
-		printf("%s dir_name\n", buf->dir_name);
-		buf = buf->next;
-	}
 	free(ls->st);
 	free(ls);
 	free(file_path);
 }
 
-void	set_opt(t_opt **opt, int ac, char **av)
-{
-	int i;
-
-	i = 0;
-	*opt = malloc(sizeof(t_opt));
-	(*opt)->l = 0;
-	(*opt)->r = 0;
-	(*opt)->R = 0;
-	(*opt)->a = 0;
-	(*opt)->t = 0;
-	if (ac > 1 && av[1][0] == '-')
-	{
-		while (av[0][i])
-		{
-			(*opt)->l = (av[1][i] == 'l' ? 1 : (*opt)->l);
-			(*opt)->r = (av[1][i] == 'r' ? 1 : (*opt)->r);
-			(*opt)->R = (av[1][i] == 'R' ? 1 : (*opt)->R);
-			(*opt)->a = (av[1][i] == 'a' ? 1 : (*opt)->a);
-			(*opt)->t = (av[1][i] == 't' ? 1 : (*opt)->t);
-			i++;
-		}
-	}
-}
-	
-void	set_dir(t_dir **dir, int ac, char **av)
-{
-	*dir = malloc(sizeof(t_dir));
-
-	(*dir)->path = opendir("..");
-	(*dir)->dir_name = "../";
-	(*dir)->next = NULL;
-
-}
 int main (int argc, char **argv)
 {
 	t_dir 	*dir;
@@ -139,7 +81,7 @@ int main (int argc, char **argv)
 	
 	set_opt(&opt, argc, argv);
 	set_dir(&dir, argc, argv);
-	start = "../";
+	start = "./";
 
 	while (dir)
 	{
@@ -149,7 +91,6 @@ int main (int argc, char **argv)
 		printf("\n\n");
 		dir = dir->next;
 	}
-
 //	printf("%s \n", dir->next->dir->d_name);
 //	dir = dir->next;
 //	if (ac == 1)
