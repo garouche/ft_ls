@@ -6,7 +6,7 @@
 /*   By: garouche <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/02/16 17:01:52 by garouche          #+#    #+#             */
-/*   Updated: 2017/02/21 00:39:35 by garouche         ###   ########.fr       */
+/*   Updated: 2017/02/21 18:25:09 by garouche         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,49 +22,55 @@
 #include <errno.h>
 #include <string.h>
 
-void	roll(t_dir **dir, char *start, t_dir **buf, char *path)
+void	roll(t_dir **dir, t_dir **buf, t_ls **ls, t_opt **opt)
 {
 	char *str;
+	int sort;
 
 	if (*buf)
 	{
 		if ((str = ft_strrchr((*buf)->dir_name, '/') + 1) == NULL)
 			str = (*buf)->dir_name + 2;
+		sort_type(str, opt, ls);
 	}
 	if (*buf == NULL)
 	{
 		*buf = malloc(sizeof(t_dir));
-		set_path(dir, buf, start, path);
+		set_path(dir, buf, ls);
 		(*buf)->next = NULL;
 	}
-	else if (ft_strcmp(path, str) > 0)
-		push_back_dir(dir, buf, path, start);
+	else if (ft_strcmp((*ls)->dir->d_name, str) > 0)
+		push_back_dir(dir, buf, ls);
 	else
-		push_front_dir(dir, buf, path, start);
+		push_front_dir(dir, buf, ls);
 }
 
-void	display(t_dir **dir, char *start, t_opt **opt)
+void	display(t_dir **dir, t_opt **opt)
 {
 	t_ls	*ls;
 	char *file_path;
 	char *ptr;
 	t_dir *buf;
+	int i;
 
+	i = 0;
 	buf = NULL;
 	file_path = ft_strjoin((*dir)->dir_name, "/");
 	ls = malloc(sizeof(t_ls));
 	ls->st = malloc(sizeof(struct stat));
 	while ((ls->dir = readdir((*dir)->path)))
 	{
-		if (*ls->dir->d_name != '.')
+		if (*ls->dir->d_name != '.' || (*opt)->a == 1)
 		{
 			printf("%s	", ls->dir->d_name);
 			ptr = ft_strjoin(file_path, ls->dir->d_name);
 			lstat(ptr, ls->st);
 			free(ptr);
-			if (S_ISDIR (ls->st->st_mode) == 1 && (*opt)->R == 1)
-				roll(dir, start, &buf, ls->dir->d_name);
+			if ((S_ISDIR (ls->st->st_mode) && (*opt)->R == 1 && (*opt)->a == 0)
+			||	((S_ISDIR (ls->st->st_mode) && (*opt)->R == 1) && i >= 2))
+				roll(dir, &buf, &ls, opt);
 		}
+		i++;
 	}
 	closedir((*dir)->path);
 	cat_list(dir, &buf);
@@ -80,17 +86,19 @@ int main (int argc, char **argv)
 	char 	*start;
 	
 	set_opt(&opt, argc, argv);
+	printf("%d R\n", opt->R);
 	set_dir(&dir, argc, argv);
-	start = "./";
+	dir->start = "./";
 
 	while (dir)
 	{
-		if (ft_strcmp(start, dir->dir_name) != 0)
+		if (ft_strcmp(dir->start, dir->dir_name) != 0)
 			printf("%s:\n", dir->dir_name);
-		display(&dir, start, &opt);
+		display(&dir, &opt);
 		printf("\n\n");
 		dir = dir->next;
 	}
+	free(opt);
 //	printf("%s \n", dir->next->dir->d_name);
 //	dir = dir->next;
 //	if (ac == 1)
