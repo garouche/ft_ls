@@ -6,7 +6,7 @@
 /*   By: garouche <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/02/20 19:33:23 by garouche          #+#    #+#             */
-/*   Updated: 2017/02/22 11:10:23 by garouche         ###   ########.fr       */
+/*   Updated: 2017/02/22 15:33:00 by garouche         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,8 +24,8 @@ t_dir	*push_back_dir(t_dir **dir, t_dir **buf, t_ls **ls, t_opt **opt)
 	{
 		if ((ptr->next = malloc(sizeof(t_dir))) == NULL)
 			return (NULL);
-		set_path(dir, &ptr->next, ls);
 		ptr->next->next = NULL;
+		set_path(dir, &ptr->next, ls);
 	}
 	else if (ptr->next != NULL)
 	{

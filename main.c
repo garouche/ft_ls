@@ -6,7 +6,7 @@
 /*   By: garouche <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/02/16 17:01:52 by garouche          #+#    #+#             */
-/*   Updated: 2017/02/22 10:28:59 by garouche         ###   ########.fr       */
+/*   Updated: 2017/02/22 17:49:52 by garouche         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,37 +39,31 @@ void	roll(t_dir **dir, t_dir **buf, t_ls **ls, t_opt **opt)
 		push_front_dir(dir, buf, ls);
 }
 
-void	display(t_dir **dir, t_opt **opt)
+void	display(t_dir **dir, t_opt **opt, t_ls **ls)
 {
-	t_ls	*ls;
 	char *file_path;
-	char *ptr;
 	t_dir *buf;
 	int i;
 
 	i = 0;
 	buf = NULL;
 	file_path = ft_strjoin((*dir)->dir_name, "/");
-	ls = malloc(sizeof(t_ls));
-	ls->st = malloc(sizeof(struct stat));
-	while ((ls->dir = readdir((*dir)->path)))
+	if ((*dir)->path)
 	{
-		if (*ls->dir->d_name != '.' || (*opt)->a == 1)
+		while (((*ls)->dir = readdir((*dir)->path)))
 		{
-			printf("%s	", ls->dir->d_name);
-			ptr = ft_strjoin(file_path, ls->dir->d_name);
-			lstat(ptr, ls->st);
-			free(ptr);
-			if ((S_ISDIR (ls->st->st_mode) && (*opt)->R == 1 && (*opt)->a == 0)
-			||	((S_ISDIR (ls->st->st_mode) && (*opt)->R == 1) && i >= 2))
-				roll(dir, &buf, &ls, opt);
+			if (*(*ls)->dir->d_name != '.' || (*opt)->a == 1)
+			{
+				display_file(file_path, ls);
+				if ((S_ISDIR ((*ls)->st->st_mode) && (*opt)->R == 1 && (*opt)->a == 0)
+				||	((S_ISDIR ((*ls)->st->st_mode) && (*opt)->R == 1) && i >= 2))
+					roll(dir, &buf, ls, opt);
+			}
+			i++;
 		}
-		i++;
+		closedir((*dir)->path);
 	}
-	closedir((*dir)->path);
 	cat_list(dir, &buf);
-	free(ls->st);
-	free(ls);
 	free(file_path);
 }
 
@@ -78,20 +72,35 @@ int main (int argc, char **argv)
 	t_dir 	*dir;
 	t_opt	*opt;
 	char 	*start;
-	
-	set_opt(&opt, argc, argv);
-	printf("%d R\n", opt->R);
-	set_dir(&dir, argc, argv);
-	dir->start = "./";
+	t_ls	*ls;
 
-	while (dir)
+	ls = malloc(sizeof(t_ls));
+	ls->st = malloc(sizeof(struct stat));
+	ls->dir = NULL;	
+	set_opt(&opt, argc, argv);
+	while (set_dir(&dir, argc, argv, &ls))
 	{
-		if (ft_strcmp(dir->start, dir->dir_name) != 0)
-			printf("%s:\n", dir->dir_name);
-		display(&dir, &opt);
-		printf("\n\n");
-		dir = dir->next;
+		if (dir->path)
+		{
+			if (dir)
+			{
+				if (ft_strchr(dir->dir_name, '/') == NULL)
+					dir->start = ft_strjoin(dir->dir_name, "/");
+				else
+					dir->start = ft_strjoin(dir->dir_name, "");
+			}
+			while (dir)
+			{
+				if (ft_strcmp(dir->start, dir->dir_name) != 0)
+					printf("%s:\n", dir->dir_name);
+				display(&dir, &opt, &ls);
+				if ((dir = dir->next) != NULL)
+					printf("	\n\n");
+			}
+		}
 	}
+	free(ls->st);
+	free(ls);
 	free(opt);
 //	printf("%s \n", dir->next->dir->d_name);
 //	dir = dir->next;

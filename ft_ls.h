@@ -6,7 +6,7 @@
 /*   By: garouche <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/02/17 16:27:17 by garouche          #+#    #+#             */
-/*   Updated: 2017/02/22 11:04:45 by garouche         ###   ########.fr       */
+/*   Updated: 2017/02/22 16:53:54 by garouche         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ typedef struct		s_dir
 	struct s_dir *next;
 	char		*dir_name;
 	char		*start;
+	char		*error;
 }					t_dir;
 
 typedef struct		s_options
@@ -56,9 +57,10 @@ typedef struct		s_options
 void	cat_list(t_dir **dir, t_dir **buf);
 void	set_opt(t_opt **opt, int ac, char **av);
 int		set_path(t_dir **dir, t_dir **ptr, t_ls **ls);
-void	set_dir(t_dir **dir, int ac, char **av);
+int	set_dir(t_dir **dir, int ac, char **av, t_ls **ls);
 t_dir	*push_back_dir(t_dir **dir, t_dir **buf, t_ls **ls, t_opt **opt);
 t_dir	*push_front_dir(t_dir **dir, t_dir **buf, t_ls **ls);
 int		sort_type(t_dir **ptr, t_opt **opt, t_ls **ls);
-
+void	opendir_fail(t_dir **ptr);
+int		display_file(char *path, t_ls **ls);
 #endif
