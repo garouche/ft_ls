@@ -6,23 +6,39 @@
 /*   By: garouche <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/02/20 16:58:38 by garouche          #+#    #+#             */
-/*   Updated: 2017/02/21 18:31:21 by garouche         ###   ########.fr       */
+/*   Updated: 2017/02/22 11:12:10 by garouche         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_ls.h"
-int		sort_type(char *str, t_opt **opt, t_ls **ls)
+int		sort_type(t_dir **ptr, t_opt **opt, t_ls **ls)
 {
 	int i;
-
-	if ((*opt)->t == 1)
+	char *str;
+	t_ls *buf;
+	
+	if	((*opt)->t == 1)
 	{
-		printf("%ld TIME\n", (*ls)->st->st_mtime);
+		buf = malloc(sizeof(t_ls));
+		buf->st = malloc(sizeof(struct stat));
+		lstat((*ptr)->dir_name, buf->st);
+		i = buf->st->st_mtime - (*ls)->st->st_mtime;
+		free(buf);
+		free(buf->st);
 	}
-	return (i);
+	else
+	{
+		if ((str = ft_strchr((*ptr)->dir_name, '/') + 1) == NULL)
+			str = (*ptr)->dir_name + 2;
+		i = ft_strcmp((*ls)->dir->d_name, str);
+	}
+	if ((*opt)->r == 1)
+		return (-i);
+	else
+		return (i);
 }
 
-void	set_path(t_dir **dir, t_dir **ptr, t_ls **ls)
+int		set_path(t_dir **dir, t_dir **ptr, t_ls **ls)
 {
 	char *str;
 
@@ -32,6 +48,7 @@ void	set_path(t_dir **dir, t_dir **ptr, t_ls **ls)
 	free(str);
 	(*ptr)->path = opendir((*ptr)->dir_name);
 	(*ptr)->start = (*dir)->start;
+	return(1);
 }
 
 void	set_opt(t_opt **opt, int ac, char **av)

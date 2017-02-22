@@ -6,21 +6,19 @@
 /*   By: garouche <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/02/20 19:33:23 by garouche          #+#    #+#             */
-/*   Updated: 2017/02/21 18:20:25 by garouche         ###   ########.fr       */
+/*   Updated: 2017/02/22 11:10:23 by garouche         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_ls.h"
 
-t_dir	*push_back_dir(t_dir **dir, t_dir **buf, t_ls **ls)
+t_dir	*push_back_dir(t_dir **dir, t_dir **buf, t_ls **ls, t_opt **opt)
 {
 	t_dir	*ptr;
 	t_dir	*ptr2;
 
 	ptr = *buf;
-	while (ptr->next &&
-	ft_strcmp((*ls)->dir->d_name, ft_strrchr(ptr->next->dir_name, '/') + 1)
-   	> 0)
+	while (ptr->next && sort_type(&ptr->next, opt, ls) > 0)
 		ptr = ptr->next;
 	if (ptr->next == NULL)
 	{

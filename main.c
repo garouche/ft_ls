@@ -6,7 +6,7 @@
 /*   By: garouche <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/02/16 17:01:52 by garouche          #+#    #+#             */
-/*   Updated: 2017/02/21 18:25:09 by garouche         ###   ########.fr       */
+/*   Updated: 2017/02/22 10:28:59 by garouche         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,20 +27,14 @@ void	roll(t_dir **dir, t_dir **buf, t_ls **ls, t_opt **opt)
 	char *str;
 	int sort;
 
-	if (*buf)
-	{
-		if ((str = ft_strrchr((*buf)->dir_name, '/') + 1) == NULL)
-			str = (*buf)->dir_name + 2;
-		sort_type(str, opt, ls);
-	}
 	if (*buf == NULL)
 	{
 		*buf = malloc(sizeof(t_dir));
 		set_path(dir, buf, ls);
 		(*buf)->next = NULL;
 	}
-	else if (ft_strcmp((*ls)->dir->d_name, str) > 0)
-		push_back_dir(dir, buf, ls);
+	else if (sort_type(buf, opt, ls) > 0)
+		push_back_dir(dir, buf, ls, opt);
 	else
 		push_front_dir(dir, buf, ls);
 }
