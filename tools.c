@@ -6,12 +6,12 @@
 /*   By: garouche <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/02/20 16:58:38 by garouche          #+#    #+#             */
-/*   Updated: 2017/02/22 15:34:20 by garouche         ###   ########.fr       */
+/*   Updated: 2017/02/25 23:07:02 by garouche         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_ls.h"
-int		sort_type(t_dir **ptr, t_opt **opt, t_ls **ls)
+int		sort_type(t_dir **ptr, t_opt **opt, t_ls **ls, char *path)
 {
 	int i;
 	char *str;
@@ -22,15 +22,16 @@ int		sort_type(t_dir **ptr, t_opt **opt, t_ls **ls)
 		buf = malloc(sizeof(t_ls));
 		buf->st = malloc(sizeof(struct stat));
 		lstat((*ptr)->dir_name, buf->st);
+		lstat(path, (*ls)->st);
 		i = buf->st->st_mtime - (*ls)->st->st_mtime;
 		free(buf);
 		free(buf->st);
 	}
 	else
 	{
-		if ((str = ft_strchr((*ptr)->dir_name, '/') + 1) == NULL)
-			str = (*ptr)->dir_name + 2;
-		i = ft_strcmp((*ls)->dir->d_name, str);
+		if ((str = ft_strchr((*ptr)->dir_name, '/')) == NULL)
+			str = (*ptr)->dir_name;
+		i = ft_strcmp(path, str);
 	}
 	if ((*opt)->r == 1)
 		return (-i);
@@ -97,4 +98,17 @@ void    cat_list(t_dir **dir, t_dir **buf)
 		ptr2->next = (*dir)->next;
 		(*dir)->next = *buf;
 	}
+}
+
+t_dir	*new_dir(void)
+{
+	t_dir *dir;
+	if ((dir = malloc(sizeof(t_dir))) == NULL)
+			return (NULL);
+	dir->dir_name = "";
+	dir->path = NULL;
+	dir->start = NULL;
+	dir->error = NULL;
+	dir->next = NULL;
+	return (dir);
 }

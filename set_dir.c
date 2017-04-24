@@ -6,53 +6,66 @@
 /*   By: garouche <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/02/22 14:00:01 by garouche          #+#    #+#             */
-/*   Updated: 2017/02/22 18:15:16 by garouche         ###   ########.fr       */
+/*   Updated: 2017/02/25 22:42:38 by garouche         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_ls.h"
 
-void	open_cur_dir(t_dir **dir)
+t_dir	*open_cur_dir(void)
 {
-	(*dir)->path = opendir(".");
-	(*dir)->dir_name = ft_strjoin("", ".");
-	(*dir)->next = NULL;
+	t_dir *dir;
+
+	dir = new_dir();
+	dir->path = opendir(".");
+	dir->dir_name = ft_strjoin("", ".");
+	dir->next = NULL;
+	return (dir);
 }
 
-int    set_dir(t_dir **dir, int ac, char **av, t_ls **ls)
+void	set_arg(char *av, t_opt **opt, t_ls **ls, t_dir **dir)
 {
-	static int j = 1;
-	char *str;
+	t_dir *buf;
+	t_dir *buf2;
+	t_dir *error;
 
-	*dir = malloc(sizeof(t_dir));
-	(*dir)->dir_name = NULL;
-	(*dir)->path = NULL;
-	if (j > ac)
-		return (0);
+	buf = new_dir();
+	buf->dir_name = av;
+	if (*(*dir)->dir_name == 0)
+	{
+		free(*dir);
+		*dir = buf;
+		if (((*dir)->path = opendir(av)) == NULL && errno != 13)
+		{
+			error = *dir;
+			*dir = NULL;
+		}
+	}
+	else if (((buf->path = opendir(av)) || errno == 13))
+		push_arg(&buf, opt, ls, dir);
+	else
+		push_arg(&buf, opt, ls, &error);
+}
+
+t_dir	*set_dir(int ac, char **av, t_opt **opt, t_ls **ls)
+{
+	int j;
+	t_dir *buf;
+	t_dir *buf2;
+
+	j = 0;
+	buf2 = new_dir();
+	if (ac == 1)
+		buf = open_cur_dir();
 	if (ac > 1)
 	{
-		while (av[j])
+		while (av[++j])
 		{
 			if (av[j][0] != '-')
-			{
-				(*dir)->dir_name = av[j];
-				(*dir)->next = NULL;
-				if (((*dir)->path = opendir(av[j])) || errno == 13)
-				{
-					j++;
-					return (1);
-				}
-				else if (errno == 20)
-					display_file(av[j], ls);
-				else
-					printf("ls: %s: %s\n", av[j], strerror(errno));
-			}
-			j++;
+				set_arg(av[j], opt, ls, &buf2);
 		}
-
 	}
-	if ((ac == 1 || (*dir)->dir_name == NULL))
-		open_cur_dir(dir);
-	j++;
-	return (1);
+	if (ac == 1 || buf2->dir_name == NULL)
+		buf2 = open_cur_dir();
+	return (buf2);
 }

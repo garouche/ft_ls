@@ -6,7 +6,7 @@
 /*   By: garouche <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/02/20 19:33:23 by garouche          #+#    #+#             */
-/*   Updated: 2017/02/22 15:33:00 by garouche         ###   ########.fr       */
+/*   Updated: 2017/02/25 22:36:51 by garouche         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ t_dir	*push_back_dir(t_dir **dir, t_dir **buf, t_ls **ls, t_opt **opt)
 	t_dir	*ptr2;
 
 	ptr = *buf;
-	while (ptr->next && sort_type(&ptr->next, opt, ls) > 0)
+	while (ptr->next && sort_type(&ptr->next, opt, ls, (*ls)->dir->d_name) > 0)
 		ptr = ptr->next;
 	if (ptr->next == NULL)
 	{
@@ -50,4 +50,35 @@ t_dir	*push_front_dir(t_dir **dir, t_dir **buf, t_ls **ls)
 	ptr = *buf;
 	set_path(dir, &ptr, ls);
 	return (ptr);	
+
+}
+
+void	push_arg(t_dir **buf, t_opt **opt, t_ls **ls, t_dir **dir)
+{
+	t_dir *ptr;
+
+	if (*dir == NULL)
+		*dir = *buf;	
+	else
+	{
+		ptr = *dir;
+		if (sort_type(buf, opt, ls, (*dir)->dir_name) < 0)
+		{
+			while (ptr->next &&
+				   	sort_type(buf, opt, ls, ptr->next->dir_name) < 0)
+				ptr = ptr->next;
+			if (ptr->next == NULL)
+				ptr->next = *buf;
+			else
+			{
+				(*buf)->next = ptr->next;
+				ptr->next = *buf;
+			}
+		}
+		else
+		{
+			(*buf)->next = *dir;
+			*dir = *buf;	
+		}
+	}
 }

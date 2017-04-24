@@ -6,21 +6,11 @@
 /*   By: garouche <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/02/16 17:01:52 by garouche          #+#    #+#             */
-/*   Updated: 2017/02/22 17:49:52 by garouche         ###   ########.fr       */
+/*   Updated: 2017/02/25 17:19:51 by garouche         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_ls.h"
-#include <stdio.h>
-#include <sys/types.h>
-#include <dirent.h>
-#include <sys/types.h> 
-#include <sys/stat.h> 
-#include <unistd.h>
-#include <time.h>
-#include <sys/xattr.h>
-#include <errno.h>
-#include <string.h>
 
 void	roll(t_dir **dir, t_dir **buf, t_ls **ls, t_opt **opt)
 {
@@ -33,7 +23,7 @@ void	roll(t_dir **dir, t_dir **buf, t_ls **ls, t_opt **opt)
 		set_path(dir, buf, ls);
 		(*buf)->next = NULL;
 	}
-	else if (sort_type(buf, opt, ls) > 0)
+	else if (sort_type(buf, opt, ls, (*ls)->dir->d_name) > 0)
 		push_back_dir(dir, buf, ls, opt);
 	else
 		push_front_dir(dir, buf, ls);
@@ -71,34 +61,36 @@ int main (int argc, char **argv)
 {
 	t_dir 	*dir;
 	t_opt	*opt;
-	char 	*start;
 	t_ls	*ls;
+	t_dir	*buf;
 
 	ls = malloc(sizeof(t_ls));
 	ls->st = malloc(sizeof(struct stat));
 	ls->dir = NULL;	
 	set_opt(&opt, argc, argv);
-	while (set_dir(&dir, argc, argv, &ls))
+	dir = set_dir(argc, argv, &opt, &ls);
+	buf = dir;
+	while (buf)
 	{
-		if (dir->path)
-		{
-			if (dir)
-			{
-				if (ft_strchr(dir->dir_name, '/') == NULL)
-					dir->start = ft_strjoin(dir->dir_name, "/");
-				else
-					dir->start = ft_strjoin(dir->dir_name, "");
-			}
-			while (dir)
-			{
-				if (ft_strcmp(dir->start, dir->dir_name) != 0)
-					printf("%s:\n", dir->dir_name);
-				display(&dir, &opt, &ls);
-				if ((dir = dir->next) != NULL)
-					printf("	\n\n");
-			}
-		}
+		printf("%s -> ", buf->dir_name);
+		buf = buf->next;
 	}
+//		while (buf)
+//		{
+///			if (ft_strchr(dir->dir_name, '/') == NULL)
+//				buf->start = ft_strjoin(dir->dir_name, "/");
+///			else
+//				buf->start = ft_strjoin(dir->dir_name, "");
+//			buf = buf->next;
+//		}
+//		while (dir)
+//		{
+//			if (ft_strcmp(dir->start, dir->dir_name) != 0)
+//				printf("%s:\n", dir->dir_name);
+///			display(&dir, &opt, &ls);
+//			if ((dir = dir->next) != NULL)
+//				printf("	\n\n");
+//		}
 	free(ls->st);
 	free(ls);
 	free(opt);

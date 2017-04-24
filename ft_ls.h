@@ -6,7 +6,7 @@
 /*   By: garouche <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/02/17 16:27:17 by garouche          #+#    #+#             */
-/*   Updated: 2017/02/22 16:53:54 by garouche         ###   ########.fr       */
+/*   Updated: 2017/02/25 21:59:55 by garouche         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,10 +57,13 @@ typedef struct		s_options
 void	cat_list(t_dir **dir, t_dir **buf);
 void	set_opt(t_opt **opt, int ac, char **av);
 int		set_path(t_dir **dir, t_dir **ptr, t_ls **ls);
-int	set_dir(t_dir **dir, int ac, char **av, t_ls **ls);
+t_dir	*set_dir(int ac, char **av, t_opt **opt, t_ls **ls);
 t_dir	*push_back_dir(t_dir **dir, t_dir **buf, t_ls **ls, t_opt **opt);
 t_dir	*push_front_dir(t_dir **dir, t_dir **buf, t_ls **ls);
-int		sort_type(t_dir **ptr, t_opt **opt, t_ls **ls);
+int		sort_type(t_dir **ptr, t_opt **opt, t_ls **ls, char *path);
 void	opendir_fail(t_dir **ptr);
 int		display_file(char *path, t_ls **ls);
+t_dir	*new_dir(void);
+void	set_arg(char *av, t_opt **opt, t_ls **ls, t_dir **dir);
+void	push_arg(t_dir **buf,t_opt **opt, t_ls **ls, t_dir **dir);
 #endif
